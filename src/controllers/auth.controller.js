@@ -1,5 +1,7 @@
 import { isAllowedEmail } from "../config/csv.js";
-import { hashPassword } from "../config/password.js";
+import jwt from "jsonwebtoken";
+import { comparePassword, hashPassword } from "../config/password.js";
+import { env } from "../config/env.js";
 
 import createHttpError from "http-errors";
 
@@ -51,5 +53,41 @@ export async function register(req, res, next) {
     });
   } catch (error) {
     next(error); // pass to express error handler
+  }
+}
+
+//login a user
+
+export async function login(req, res, next) {
+  try {
+    const { email, password } = req.body;
+
+    //find the user
+    const user = await prisma.user.findUnique({
+      where: { email },
+    });
+    if (!user) throw createHttpError(401, "User not found");
+    //compare password
+
+    const isMatch = await comparePassword(password, user.password);
+    if (!isMatch) throw createHttpError(401, "Invalid credentials");
+
+    //  Generate JWT token
+    const token = jwt.sign({ id: user.id, email: user.email }, env.JWT_SECRET, {
+      expiresIn: env.JWT_EXPIRES_IN,
+    });
+
+    //  Return token
+    res.json({
+      message: "Login successful",
+      token,
+      user: {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+      },
+    });
+  } catch (error) {
+    next(error);
   }
 }
