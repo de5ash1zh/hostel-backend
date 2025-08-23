@@ -25,6 +25,7 @@ model User {
   groupsLed    Group[]       @relation("GroupLeader")
   memberships  GroupMember[]
   joinRequests JoinRequest[]
+  GroupPost    GroupPost[]
 }
 
 model Group {
@@ -38,6 +39,7 @@ model Group {
   leader       User          @relation("GroupLeader", fields: [leaderId], references: [id])
   members      GroupMember[]
   joinRequests JoinRequest[]
+  posts        GroupPost[]
 }
 
 model GroupMember {
@@ -66,4 +68,17 @@ model JoinRequest {
   user  User  @relation(fields: [userId], references: [id])
 
   @@unique([groupId, userId]) // one request per user per group
+}
+
+model GroupPost {
+  id        Int      @id @default(autoincrement())
+  groupId   Int
+  authorId  Int
+  title     String
+  content   String
+  createdAt DateTime @default(now())
+
+  // Relations
+  group  Group @relation(fields: [groupId], references: [id])
+  author User  @relation(fields: [authorId], references: [id])
 }
