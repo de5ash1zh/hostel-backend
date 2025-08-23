@@ -1,0 +1,69 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  name      String
+  password  String
+  createdAt DateTime @default(now())
+
+  // Relations
+  groupsLed    Group[]       @relation("GroupLeader")
+  memberships  GroupMember[]
+  joinRequests JoinRequest[]
+}
+
+model Group {
+  id          Int      @id @default(autoincrement())
+  name        String
+  description String
+  leaderId    Int
+  createdAt   DateTime @default(now())
+
+  // Relations
+  leader       User          @relation("GroupLeader", fields: [leaderId], references: [id])
+  members      GroupMember[]
+  joinRequests JoinRequest[]
+}
+
+model GroupMember {
+  id       Int      @id @default(autoincrement())
+  groupId  Int
+  userId   Int
+  joinedAt DateTime @default(now())
+
+  // Relations
+  group Group @relation(fields: [groupId], references: [id])
+  user  User  @relation(fields: [userId], references: [id])
+
+  @@unique([groupId, userId]) // prevents duplicate membership
+}
+
+model JoinRequest {
+  id        Int      @id @default(autoincrement())
+  groupId   Int
+  userId    Int
+  message   String?
+  status    String   @default("pending") // pending, accepted, rejected
+  createdAt DateTime @default(now())
+
+  // Relations
+  group Group @relation(fields: [groupId], references: [id])
+  user  User  @relation(fields: [userId], references: [id])
+
+  @@unique([groupId, userId]) // one request per user per group
+}
