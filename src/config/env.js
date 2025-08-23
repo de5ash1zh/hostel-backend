@@ -1,4 +1,3 @@
-// src/config/env.js
 import dotenv from "dotenv";
 dotenv.config();
 
@@ -8,7 +7,9 @@ function required(name) {
   return value;
 }
 
-export const NODE_ENV = process.env.NODE_ENV || "development";
-export const PORT = process.env.PORT || 3000;
-export const JWT_SECRET = required("JWT_SECRET");
-export const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || "7d";
+export const env = {
+  NODE_ENV: process.env.NODE_ENV || "development",
+  PORT: process.env.PORT || 3000,
+  JWT_SECRET: required("JWT_SECRET"),
+  JWT_EXPIRES_IN: process.env.JWT_EXPIRES_IN || "7d",
+};
