@@ -1,4 +1,4 @@
-import pkg from "@prisma/client";
+import pkg from "../generated/prisma/index.js";
 import createHttpError from "http-errors";
 
 const { PrismaClient } = pkg;

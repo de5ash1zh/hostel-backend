@@ -1,15 +1,16 @@
+// groupMember.routes.js
 import express from "express";
 import { authMiddleware } from "../middleware/auth.middleware.js";
 import {
   listMembers,
   removeMember,
   leaveGroup,
-} from "../controllers/group.controller.js";
+} from "../controllers/groupMember.controller.js";
+const router = express.Router();
 
-const router = express.Router({ mergeParams: true });
-
-router.get("/groups/:id/members", authMiddleware, listMembers);
-router.put("/groups/:id/remove", authMiddleware, removeMember);
-router.put("/groups/:id/leave", authMiddleware, leaveGroup);
+// Protected routes
+router.get("/:id/members", authMiddleware, listMembers);
+router.delete("/:id/members", authMiddleware, removeMember);
+router.post("/:id/leave", authMiddleware, leaveGroup);
 
 export default router;
