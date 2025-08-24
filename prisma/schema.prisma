@@ -26,6 +26,7 @@ model User {
   memberships  GroupMember[]
   joinRequests JoinRequest[]
   GroupPost    GroupPost[]
+  notices      Notice[]
 }
 
 model Group {
@@ -40,6 +41,7 @@ model Group {
   members      GroupMember[]
   joinRequests JoinRequest[]
   posts        GroupPost[]
+  notices      Notice[]
 }
 
 model GroupMember {
@@ -77,6 +79,22 @@ model GroupPost {
   title     String
   content   String
   createdAt DateTime @default(now())
+
+  // Relations
+  group  Group @relation(fields: [groupId], references: [id])
+  author User  @relation(fields: [authorId], references: [id])
+}
+
+model Notice {
+  id        Int      @id @default(autoincrement())
+  groupId   Int
+  authorId  Int
+  title     String
+  content   String
+  priority  String   @default("normal") // urgent, important, normal, info
+  isPinned  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   // Relations
   group  Group @relation(fields: [groupId], references: [id])

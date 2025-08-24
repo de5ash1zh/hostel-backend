@@ -64,3 +64,40 @@ export async function updateProfile(req, res, next) {
     next(error);
   }
 }
+
+//Get current user's groups (protected)
+export async function getUserGroups(req, res, next) {
+  try {
+    const userId = req.user?.id;
+    if (!userId) throw createHttpError(401, "Unauthorized");
+
+    const userGroups = await prisma.groupMember.findMany({
+      where: { userId },
+      include: {
+        group: {
+          include: {
+            _count: {
+              select: {
+                members: true,
+                posts: true
+              }
+            }
+          }
+        }
+      },
+      orderBy: {
+        joinedAt: 'desc'
+      }
+    });
+
+    const groups = userGroups.map(membership => ({
+      ...membership.group,
+      joinedAt: membership.joinedAt,
+      role: membership.group.leaderId === userId ? 'leader' : 'member'
+    }));
+
+    res.json({ groups });
+  } catch (error) {
+    next(error);
+  }
+}

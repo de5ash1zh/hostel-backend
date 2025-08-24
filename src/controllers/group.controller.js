@@ -77,6 +77,7 @@ export async function getGroupDetails(req, res, next) {
         leaderId: true,
         members: {
           select: {
+            id: true,
             user: {
               select: {
                 id: true,

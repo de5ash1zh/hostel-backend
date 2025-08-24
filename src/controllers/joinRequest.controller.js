@@ -32,15 +32,18 @@ export async function createJoinRequest(req, res, next) {
     if (existingRequest) throw createHttpError(400, "Request already sent");
 
     //create request
+    const { message } = req.body;
     const joinRequest = await prisma.joinRequest.create({
       data: {
         groupId,
         userId,
+        message: message || null,
       },
       select: {
         id: true,
         groupId: true,
         userId: true,
+        message: true,
         createdAt: true,
       },
     });
@@ -67,6 +70,7 @@ export async function listJoinRequests(req, res, next) {
         id: true,
         userId: true,
         status: true,
+        message: true,
         createdAt: true,
         user: {
           select: {

@@ -91,3 +91,45 @@ export async function login(req, res, next) {
     next(error);
   }
 }
+
+// Dev-only: reset a user's password or create the user if allowed and not existing
+export async function devResetPassword(req, res, next) {
+  try {
+    if (env.NODE_ENV === "production") {
+      throw createHttpError(403, "Not allowed in production");
+    }
+
+    const { email, password, name } = req.body;
+    if (!email || !password) {
+      throw createHttpError(400, "email and password are required");
+    }
+
+    let user = await prisma.user.findUnique({ where: { email } });
+
+    if (!user) {
+      // if not exists, only create when email is allowed
+      if (!isAllowedEmail(email)) {
+        throw createHttpError(403, "Email not allowed");
+      }
+      const hashed = await hashPassword(password);
+      user = await prisma.user.create({
+        data: {
+          email,
+          password: hashed,
+          name: name || email.split("@")[0],
+        },
+      });
+    } else {
+      // update password
+      const hashed = await hashPassword(password);
+      user = await prisma.user.update({
+        where: { email },
+        data: { password: hashed },
+      });
+    }
+
+    return res.json({ message: "Password set", user: { id: user.id, email: user.email } });
+  } catch (error) {
+    next(error);
+  }
+}
